@@ -1,4 +1,3 @@
-```markdown
 # Wirklich - A Screenshotter Utility
 
 A simple but powerful screenshot utility built with Playwright and Node.js. It allows you to capture web pages with various configurations, including device emulation, ad-blocking, cookie banner handling, and multiple viewport sizes.
