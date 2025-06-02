@@ -1,0 +1,7 @@
+node_modules
+npm-debug.log
+*.log
+.git
+.gitignore
+# Add any local output directories you might have, e.g.:
+examples

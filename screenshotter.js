@@ -44,6 +44,9 @@ async function takeScreenshot(options = {}) {
     headless = true,
   } = options;
 
+  const isDocker = fs.existsSync("/.dockerenv");
+  const executablePath = isDocker ? "/usr/bin/chromium" : undefined;
+
   if (blockAds) {
     if (!adblockPath) {
       const errMsg = "❌ Adblock enabled, but adblockPath is missing.";
@@ -158,6 +161,7 @@ async function takeScreenshot(options = {}) {
     }
 
     const persistentContextLaunchOptions = {
+      executablePath: executablePath,
       headless: headless,
       args: [
         `--disable-extensions-except=${adblockPath}`,
@@ -171,7 +175,10 @@ async function takeScreenshot(options = {}) {
     );
   } else {
     console.log(`🚀 Launching browser without adblocker...`);
-    browser = await chromium.launch({ headless: headless });
+    browser = await chromium.launch({
+      headless: headless,
+      executablePath: executablePath,
+    });
     context = await browser.newContext(contextOptions);
   }
 
