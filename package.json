@@ -1,0 +1,17 @@
+{
+  "name": "wirklich",
+  "version": "0.0.1",
+  "description": "A simple screenshot utility, written with playwright & node",
+  "keywords": [
+    "screenshot",
+    "node",
+    "docker"
+  ],
+  "license": "MIT",
+  "author": "Kartik Mudgal",
+  "type": "commonjs",
+  "main": "screenshotter.js",
+  "scripts": {
+    "test": "npm run test.js"
+  }
+}
