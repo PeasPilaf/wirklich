@@ -12,6 +12,9 @@
   "type": "commonjs",
   "main": "screenshotter.js",
   "scripts": {
-    "test": "npm run test.js"
+    "test": ""
+  },
+  "dependencies": {
+    "playwright": "^1.52.0"
   }
 }
