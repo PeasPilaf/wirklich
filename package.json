@@ -9,7 +9,7 @@
   ],
   "license": "MIT",
   "author": "Kartik Mudgal",
-  "type": "commonjs",
+  "type": "module",
   "main": "screenshotter.js",
   "scripts": {
     "test": ""

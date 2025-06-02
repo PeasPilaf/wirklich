@@ -1,20 +1,23 @@
-const { chromium, devices } = require("playwright");
-const fs = require("fs");
-const path = require("path");
-const os = require("os");
+import { chromium, devices } from "playwright";
+import fs from "fs";
+import path from "path";
+import os from "os";
+import { fileURLToPath } from "url";
+
+export { devices };
 
 /**
  * Takes a screenshot of a given URL with various options.
  *
  * @param {object} options - Configuration options for the screenshot.
- * @param {string} [options.url="https://example.com"] - The URL to take a screenshot of.
+ * @param {string} [options.url="https:
  * @param {boolean} [options.fullPage=true] - Whether to take a full page screenshot.
- * @param {boolean} [options.cookieBannerAutoAccept=true] - Attempt to auto-accept cookie banners.
+ * @param {boolean} [options.cookieBannerAutoAccept=false] - Attempt to auto-accept cookie banners.
  * @param {string|null} [options.cookieSelectorsFilePath=null] - Path to a file containing cookie banner selectors (one per line). Required if cookieBannerAutoAccept is true.
  * @param {number} [options.delayForPaint=1000] - Milliseconds to wait after page load/action before screenshot.
  * @param {boolean} [options.blockAds=false] - Whether to enable ad blocking.
  * @param {string|null} [options.adblockPath=null] - Path to UNPACKED adblocker extension (required if blockAds is true).
- * @param {string|null} [options.deviceName=null] - Name of a Playwright device to emulate (e.g., "iPhone 13 Pro Max").
+ * @param {string|null} [options.deviceName=null] - Name of a Playwright device to emulate (e.g., "iPhone 13 Pro Max"). The 'devices' object is imported from Playwright.
  * @param {number|null} [options.viewportWidth=null] - Explicit viewport width (used if deviceName is not set).
  * @param {number|null} [options.viewportHeight=null] - Explicit viewport height (used if deviceName is not set).
  * @param {number|null} [options.deviceScaleFactor=null] - Explicit device scale factor (used if deviceName is not set).
@@ -25,12 +28,13 @@ const os = require("os");
  * @returns {Promise<string[]>} A promise that resolves with an array of paths to the saved screenshots.
  * @throws {Error} If adblocking is enabled but adblockPath is invalid, cookie auto-accept is enabled but selector file is invalid, or other critical errors.
  */
-async function takeScreenshot(options = {}) {
+
+export async function takeScreenshot(options = {}) {
   const {
     url = "https://example.com",
     fullPage = true,
-    cookieBannerAutoAccept = true,
-    cookieSelectorsFilePath = null, // New option
+    cookieBannerAutoAccept = false,
+    cookieSelectorsFilePath = null,
     delayForPaint = 1000,
     blockAds = false,
     adblockPath = null,
@@ -46,6 +50,7 @@ async function takeScreenshot(options = {}) {
 
   const isDocker = fs.existsSync("/.dockerenv");
   const executablePath = isDocker ? "/usr/bin/chromium" : undefined;
+  const slowMoDelta = headless ? 0 : 1000;
 
   if (blockAds) {
     if (!adblockPath) {
@@ -163,10 +168,12 @@ async function takeScreenshot(options = {}) {
     const persistentContextLaunchOptions = {
       executablePath: executablePath,
       headless: headless,
+      slowMo: slowMoDelta,
       args: [
         `--disable-extensions-except=${adblockPath}`,
         `--load-extension=${adblockPath}`,
       ],
+
       ...contextOptions,
     };
     context = await chromium.launchPersistentContext(
@@ -178,6 +185,7 @@ async function takeScreenshot(options = {}) {
     browser = await chromium.launch({
       headless: headless,
       executablePath: executablePath,
+      slowMo: slowMoDelta,
     });
     context = await browser.newContext(contextOptions);
   }
@@ -190,6 +198,12 @@ async function takeScreenshot(options = {}) {
   if (blockAds) {
     console.log("⏳ Allowing a moment for adblocker to process the page...");
     await page.waitForTimeout(2000);
+    console.log("🚀 Warming up the ad-blocker...");
+    const blankPage = await context.newPage();
+    await blankPage.goto("about:blank");
+    await blankPage.waitForTimeout(5 * 1000);
+    await blankPage.close();
+    console.log("done waitning...");
   }
 
   if (cookieBannerAutoAccept) {
@@ -210,10 +224,7 @@ async function takeScreenshot(options = {}) {
             bannerClicked = true;
             break;
           }
-        } catch (e) {
-          // Button not visible or other error, try next selector
-          // console.debug(`Button for selector "${selector}" not found or not clickable: ${e.message}`);
-        }
+        } catch (e) {}
       }
       if (!bannerClicked) {
         console.log(
@@ -342,19 +353,15 @@ async function takeScreenshot(options = {}) {
     );
     try {
       if (fs.rmSync) {
-        // fs.rmSync is available in Node.js v14.14.0+
         fs.rmSync(tempUserDataDir, { recursive: true, force: true });
       } else {
-        // Fallback for older Node.js versions
         const deleteFolderRecursive = function (directoryPath) {
           if (fs.existsSync(directoryPath)) {
             fs.readdirSync(directoryPath).forEach((file) => {
               const curPath = path.join(directoryPath, file);
               if (fs.lstatSync(curPath).isDirectory()) {
-                // recurse
                 deleteFolderRecursive(curPath);
               } else {
-                // delete file
                 fs.unlinkSync(curPath);
               }
             });
@@ -375,7 +382,8 @@ async function takeScreenshot(options = {}) {
   return savedFilePaths;
 }
 
-if (require.main === module) {
+const __currentFilePath = fileURLToPath(import.meta.url);
+if (process.argv[1] === __currentFilePath) {
   const cliOptions = {
     url: "https://example.com",
     fullPage: true,
@@ -392,6 +400,7 @@ if (require.main === module) {
     outputDir: ".",
     multipleWidths: null,
     headless: true,
+    debug: false,
   };
 
   process.argv.slice(2).forEach((arg) => {
@@ -426,6 +435,8 @@ if (require.main === module) {
       cliOptions.multipleWidths = value.split(",").map(Number);
     } else if (key === "--headless") {
       cliOptions.headless = value !== "no";
+    } else if (key === "--debug") {
+      cliOptions.debug = value !== "no";
     } else {
       console.warn(`Unknown argument: ${arg}`);
     }
@@ -470,5 +481,3 @@ if (require.main === module) {
       process.exit(1);
     });
 }
-
-module.exports = { takeScreenshot, devices };
