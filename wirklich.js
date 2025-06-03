@@ -398,6 +398,12 @@ export async function getBrowserPool({
             timeout: max_wait_timeout,
           });
 
+          /**
+           * add wait for adblock functionality here if you want
+           * similarily in, the other function
+           * -cheers, Kartik
+           */
+
           if (accept_cookie_banners) {
             console.log(
               `[Task: ${url}] (Adblock: ${use_adblock}) Attempting to accept cookie banners...`

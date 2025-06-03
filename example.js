@@ -3,8 +3,27 @@ import fs from "fs";
 async function main() {
   let pool;
 
-  const uBlockPath =
-    "/Users/kartikmudgal/Desktop/works/saas/wirklich/ext_ublock";
+  const uBlockPath = "/path/to/unpacked/extension/ext_ublock";
+  /**
+   * Note: While extension loading currently works,
+   * since each new browser context loads a fresh ublock extension,
+   * it does not preserve the extension's filter list
+   *
+   * If launching browser's with adblocking enabled, please
+   * allow some time (~2-3s should be enough) for the extensions
+   * to fully load
+   *
+   * I haven't done so in the example.js file. This means that
+   * the extension doesn't block all ads (as can be seen in the
+   * example screenshots)
+   *
+   * `screenshotter.js` does allow time for adblock to fully load
+   * before taking screenshots, but I did have situations where I
+   * did not want to wait, so ...
+   *
+   * Anyways, you can configure a wait time in the task_config object
+   * passed to createScreenshotTask or createScreencastTask
+   */
   const adblockerAvailable = fs.existsSync(uBlockPath);
 
   if (!adblockerAvailable) {
