@@ -10,7 +10,7 @@
   "license": "MIT",
   "author": "Kartik Mudgal",
   "type": "module",
-  "main": "screenshotter.js",
+  "main": "wirklich.js",
   "scripts": {
     "test": ""
   },
