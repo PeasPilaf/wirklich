@@ -43,15 +43,17 @@ class PriorityQueue {
   }
 }
 
-export async function getBrowserPool({
-  pool_size_default = 3,
-  playwrightLaunchOptionsDefault = { headless: true },
-  pool_size_adblock = 3,
-  adblockExtensionPath,
-  playwrightLaunchOptionsAdblock = { headless: true },
-  maxPagesPerBrowser = 1,
-  taskTimeoutMs = 60000,
-}) {
+export async function getBrowserPool(options = {}) {
+  const {
+    pool_size_default = 3,
+    playwrightLaunchOptionsDefault = { headless: true },
+    pool_size_adblock = 0,
+    adblockExtensionPath,
+    playwrightLaunchOptionsAdblock = { headless: true },
+    maxPagesPerBrowser = 1,
+    taskTimeoutMs = 60000,
+  } = options;
+
   if (!chromium) {
     throw new Error(
       "Chromium is not available from Playwright. Make sure it's installed (npx playwright install chromium)."
@@ -955,6 +957,13 @@ export async function getBrowserPool({
   async function shutdown(force = false) {
     console.log(`[Pool] Shutting down... (Force: ${force})`);
     shuttingDown = true;
+
+    if (force == true) {
+      /**
+       * force kill ?
+       * should this be an option?
+       */
+    }
 
     while (!taskQueue.isEmpty()) {
       const queuedItem = taskQueue.dequeue();
