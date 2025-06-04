@@ -1,6 +1,6 @@
 {
   "name": "wirklich",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A simple screenshot utility, written with playwright & node",
   "keywords": [
     "screenshot",
